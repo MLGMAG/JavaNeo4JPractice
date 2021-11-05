@@ -7,7 +7,9 @@ import com.mlgmag.javaNeo4J.entity.employer.EmployerPropertiesLayer;
 import com.mlgmag.javaNeo4J.repository.EmployerRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,5 +84,44 @@ public class EmployerService {
 
     public EmployerDataLayer getEmployerByName(String employerName) {
         return employerRepository.getEmployerByName(employerName);
+    }
+
+    public List<EmployerPropertiesLayer> getAllEmployers() {
+        return employerRepository.getAllEmployers();
+    }
+
+    public int computeShortestDistance(FriendPairDto friendPairDto) {
+        return employerRepository.computeShortestDistance(friendPairDto.getFriend1(), friendPairDto.getFriend2()).orElse(-1);
+    }
+
+    public Map<String, Map<String, Integer>> getAllDistances() {
+        Map<String, Map<String, Integer>> result = new HashMap<>();
+
+        List<EmployerPropertiesLayer> allEmployers = getAllEmployers();
+
+        for (EmployerPropertiesLayer source : allEmployers) {
+            Map<String, Integer> employerDistances = getEmployerDistances(source, allEmployers);
+            result.put(source.getName(), employerDistances);
+        }
+
+        return result;
+    }
+
+    private Map<String, Integer> getEmployerDistances(EmployerPropertiesLayer employer, List<EmployerPropertiesLayer> allEmployers) {
+        Map<String, Integer> result = new HashMap<>();
+        Employer employer1 = new Employer();
+        employer1.setName(employer.getName());
+
+        Employer employer2 = new Employer();
+        for (EmployerPropertiesLayer target : allEmployers) {
+            employer2.setName(target.getName());
+            if (employer1.getName().equals(employer2.getName())) {
+                continue;
+            }
+            int distance = employerRepository.computeShortestDistance(employer1, employer2).orElse(-1);
+            result.put(target.getName(), distance);
+        }
+
+        return result;
     }
 }

@@ -7,6 +7,9 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface EmployerRepository extends Neo4jRepository<Employer, String> {
 
     @Query("CREATE (e:Employer {name: :#{#employer.name}, age: :#{#employer.age}}) RETURN e")
@@ -37,4 +40,10 @@ public interface EmployerRepository extends Neo4jRepository<Employer, String> {
     void deleteAllRelations(@Param("employer") Employer employer);
 
     EmployerDataLayer getEmployerByName(String employerName);
+
+    @Query("MATCH (e:Employer) RETURN (e)")
+    List<EmployerPropertiesLayer> getAllEmployers();
+
+    @Query("MATCH (start: Employer{name: :#{#employer1.name}}), (end: Employer{name: :#{#employer2.name}}), p = shortestPath((start)-[*]-(end)) RETURN LENGTH(p)")
+    Optional<Integer> computeShortestDistance(@Param("employer1") Employer employer1, @Param("employer2") Employer employer2);
 }

@@ -1,13 +1,18 @@
 package com.mlgmag.javaNeo4J.service;
 
 import com.mlgmag.javaNeo4J.dto.ProjectEmployerDto;
+import com.mlgmag.javaNeo4J.entity.employer.Employer;
+import com.mlgmag.javaNeo4J.entity.employer.EmployerPropertiesLayer;
 import com.mlgmag.javaNeo4J.entity.project.Project;
 import com.mlgmag.javaNeo4J.entity.project.ProjectDataLayer;
 import com.mlgmag.javaNeo4J.entity.project.ProjectPropertiesLayer;
 import com.mlgmag.javaNeo4J.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,5 +65,40 @@ public class ProjectService {
 
     public ProjectDataLayer getProjectByTitle(String title) {
         return projectRepository.getProjectByTitle(title);
+    }
+
+    public List<ProjectPropertiesLayer> getAllProjects() {
+        return projectRepository.getAllEmployers();
+    }
+
+    public Map<String, Map<String, Integer>> getAllDistances() {
+        Map<String, Map<String, Integer>> result = new HashMap<>();
+
+        List<ProjectPropertiesLayer> allProjects = getAllProjects();
+
+        for (ProjectPropertiesLayer source : allProjects) {
+            Map<String, Integer> projectDistances = getProjectDistances(source, allProjects);
+            result.put(source.getTitle(), projectDistances);
+        }
+
+        return result;
+    }
+
+    public Map<String, Integer> getProjectDistances(ProjectPropertiesLayer project, List<ProjectPropertiesLayer> allProjecs) {
+        Map<String, Integer> result = new TreeMap<>();
+        Project project1 = new Project();
+        project1.setTitle(project.getTitle());
+
+        Project project2 = new Project();
+        for (ProjectPropertiesLayer target : allProjecs) {
+            project2.setTitle(target.getTitle());
+            if (project1.getTitle().equals(project2.getTitle())) {
+                continue;
+            }
+            int distance = projectRepository.computeShortestDistance(project1, project2).orElse(-1);
+            result.put(target.getTitle(), distance);
+        }
+
+        return result;
     }
 }

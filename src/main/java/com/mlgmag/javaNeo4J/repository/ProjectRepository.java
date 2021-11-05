@@ -1,12 +1,16 @@
 package com.mlgmag.javaNeo4J.repository;
 
 import com.mlgmag.javaNeo4J.entity.employer.Employer;
+import com.mlgmag.javaNeo4J.entity.employer.EmployerPropertiesLayer;
 import com.mlgmag.javaNeo4J.entity.project.Project;
 import com.mlgmag.javaNeo4J.entity.project.ProjectDataLayer;
 import com.mlgmag.javaNeo4J.entity.project.ProjectPropertiesLayer;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface ProjectRepository extends Neo4jRepository<Project, String> {
 
@@ -29,4 +33,10 @@ public interface ProjectRepository extends Neo4jRepository<Project, String> {
     void addProjectEmployer(@Param("project") Project project, @Param("employer") Employer employer);
 
     ProjectDataLayer getProjectByTitle(String title);
+
+    @Query("MATCH (p:Project) RETURN (p)")
+    List<ProjectPropertiesLayer> getAllEmployers();
+
+    @Query("MATCH (start: Project{title: :#{#project1.title}}), (end: Project{title: :#{#project2.title}}), p = shortestPath((start)-[*]-(end)) RETURN LENGTH(p)")
+    Optional<Integer> computeShortestDistance(@Param("project1") Project project1, @Param("project2") Project project2);
 }
