@@ -5,6 +5,7 @@ import com.mlgmag.javaNeo4J.dto.FriendRequestDto;
 import com.mlgmag.javaNeo4J.entity.employer.Employer;
 import com.mlgmag.javaNeo4J.entity.employer.EmployerDataLayer;
 import com.mlgmag.javaNeo4J.entity.employer.EmployerPropertiesLayer;
+import com.mlgmag.javaNeo4J.model.DistanceInfo;
 import com.mlgmag.javaNeo4J.service.EmployerService;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,7 +58,7 @@ public class EmployerRestController {
     }
 
     @GetMapping("/shorterDistance")
-    public Map<String, Map<String, Integer>> getAllDistances() {
+    public Map<String, List<DistanceInfo>> getAllDistances() {
         return employerService.getAllDistances();
     }
 }

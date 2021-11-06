@@ -1,11 +1,10 @@
 package com.mlgmag.javaNeo4J.rest;
 
-import com.mlgmag.javaNeo4J.dto.FriendPairDto;
 import com.mlgmag.javaNeo4J.dto.ProjectEmployerRequestDto;
-import com.mlgmag.javaNeo4J.entity.employer.EmployerPropertiesLayer;
 import com.mlgmag.javaNeo4J.entity.project.Project;
 import com.mlgmag.javaNeo4J.entity.project.ProjectDataLayer;
 import com.mlgmag.javaNeo4J.entity.project.ProjectPropertiesLayer;
+import com.mlgmag.javaNeo4J.model.DistanceInfo;
 import com.mlgmag.javaNeo4J.service.ProjectService;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,7 +47,7 @@ public class ProjectRestController {
     }
 
     @GetMapping("/shorterDistance")
-    public Map<String, Map<String, Integer>> getAllDistances() {
+    public Map<String, List<DistanceInfo>> getAllDistances() {
         return projectService.getAllDistances();
     }
 }

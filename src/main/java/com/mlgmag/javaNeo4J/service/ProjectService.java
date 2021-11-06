@@ -1,18 +1,18 @@
 package com.mlgmag.javaNeo4J.service;
 
 import com.mlgmag.javaNeo4J.dto.ProjectEmployerDto;
-import com.mlgmag.javaNeo4J.entity.employer.Employer;
-import com.mlgmag.javaNeo4J.entity.employer.EmployerPropertiesLayer;
 import com.mlgmag.javaNeo4J.entity.project.Project;
 import com.mlgmag.javaNeo4J.entity.project.ProjectDataLayer;
 import com.mlgmag.javaNeo4J.entity.project.ProjectPropertiesLayer;
+import com.mlgmag.javaNeo4J.model.DistanceInfo;
 import com.mlgmag.javaNeo4J.repository.ProjectRepository;
+import com.mlgmag.javaNeo4J.utils.DistanceUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,33 +71,37 @@ public class ProjectService {
         return projectRepository.getAllEmployers();
     }
 
-    public Map<String, Map<String, Integer>> getAllDistances() {
-        Map<String, Map<String, Integer>> result = new HashMap<>();
+    public Map<String, List<DistanceInfo>> getAllDistances() {
+        Map<String, List<DistanceInfo>> result = new HashMap<>();
 
         List<ProjectPropertiesLayer> allProjects = getAllProjects();
 
         for (ProjectPropertiesLayer source : allProjects) {
-            Map<String, Integer> projectDistances = getProjectDistances(source, allProjects);
-            result.put(source.getTitle(), projectDistances);
+            List<DistanceInfo> employerDistances = getEmployerDistances(source, allProjects);
+            result.put(source.getTitle(), employerDistances);
         }
 
         return result;
     }
 
-    public Map<String, Integer> getProjectDistances(ProjectPropertiesLayer project, List<ProjectPropertiesLayer> allProjecs) {
-        Map<String, Integer> result = new TreeMap<>();
-        Project project1 = new Project();
-        project1.setTitle(project.getTitle());
+    private List<DistanceInfo> getEmployerDistances(ProjectPropertiesLayer title, List<ProjectPropertiesLayer> allTitle) {
+        List<DistanceInfo> result = new ArrayList<>();
 
-        Project project2 = new Project();
-        for (ProjectPropertiesLayer target : allProjecs) {
-            project2.setTitle(target.getTitle());
-            if (project1.getTitle().equals(project2.getTitle())) {
+        Project sourceProject = new Project();
+        sourceProject.setTitle(title.getTitle());
+        for (ProjectPropertiesLayer target : allTitle) {
+            if (sourceProject.getTitle().equals(target.getTitle())) {
                 continue;
             }
-            int distance = projectRepository.computeShortestDistance(project1, project2).orElse(-1);
-            result.put(target.getTitle(), distance);
+
+            Project targetProject = new Project();
+            targetProject.setTitle(target.getTitle());
+            int distance = projectRepository.computeShortestDistance(sourceProject, targetProject).orElse(-1);
+            DistanceInfo distanceInfo = DistanceInfo.builder().target(target.getTitle()).distance(distance).build();
+            result.add(distanceInfo);
         }
+
+        result.sort(DistanceUtils.DISTANCE_INFO_COMPARATOR);
 
         return result;
     }
